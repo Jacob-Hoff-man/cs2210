@@ -525,7 +525,7 @@ char *yytext;
 
 extern int yycolumn, yyline, yylval;
 
-// lex.l methods
+/* lex.l methods */
 void tolowercase();
 void trimStringConstant();
 void filterEscapeSequences();
@@ -2100,177 +2100,47 @@ void trimStringConstant()
   yytext = new;
 }
 
-/* TODO1: define ASCII DEC spec char literals in a header, maybe add some more */
-/* TODO2: make macro for repeated sequence in each case */
-/* TODO3: make better code...
-I believe this is O(n^2), I am also quite certain it leaks memory real bad */
+void updateyytextWithSpecialChar(int i, char casechr) {
+  /* filterEscapeSequences() helper, updating yytext at index i */
+  /* for-loop with pre-macro will generate 
+  updated string 'new' with special char inserted at esc sequence */
+  char * new = malloc(yyleng - 1);
+  for(int j = 0; j < yyleng - 1; j++) INSERT_SPECIAL_CHAR(i, j, new, yytext, casechr);
+  yyleng = yyleng - 1;
+  yytext = new;
+  new = NULL;
+}
+
+/* TODO: define ASCII DEC spec char literals in a header, maybe add some more */
+/* check for mem leaks? */
 void filterEscapeSequences() {
   /* trying to find any escape sequences */
   for(int i = 0; i < yyleng; i++) {
     if(yytext[i] == '\\') {
-
-      char * new = malloc(yyleng - 1);
-
       switch(yytext[i + 1]) {
-        case 'b': 
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)8; // backspace ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case 'b': // backspace ASCII DEC 8
+                  updateyytextWithSpecialChar(i, (char)8);
                   break;
-        case 'e':
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)27; // escape ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case 'e': // escape ASCII DEC 27
+                  updateyytextWithSpecialChar(i, (char)27);
                   break;
-        case 'n':
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)10; // newline ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case 'n':   // newline ASCII DEC 10
+                  updateyytextWithSpecialChar(i, (char)10);
                   break;
-        case 'r':
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)13; // carriage return ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case 'r':   // carriage return ASCII DEC 13
+                    updateyytextWithSpecialChar(i, (char)13);
                   break;
-        case 't':
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)9; // horizontal tab ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case 't':   // horizontal tab ASCII DEC 9
+                  updateyytextWithSpecialChar(i, (char)9);
                   break;
-        case 'v':
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)11; // vertical tab ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case 'v':   // vertical tab ASCII DEC 11
+                  updateyytextWithSpecialChar(i, (char)11);
                   break;
-        case '\\':
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)92; // backslash ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case '\\':   // backslash ASCII DEC 92
+                  updateyytextWithSpecialChar(i, (char)92);
                   break;
-        case '\'':
-                  for(int j = 0; j < yyleng - 1; j++) {
-                    if(i == j) {
-                      // backslash at yytext[i]
-                      new[j] = (char)39; // single-quote ASCII DEC
-
-                    } else if(i < j) {
-                      // after the backslash
-                      new[j] = yytext[j + 1];
-                    
-                    } else {
-                      // before the backslash
-                      new[j] = yytext[j];
-                    }
-                  }
-                  yyleng = yyleng - 1;
-                  yytext = new;
-                  new = NULL;
-
+        case '\'':   // single-quote ASCII DEC 39
+                  updateyytextWithSpecialChar(i, (char)39);
                   break;
         default:  
                   break;

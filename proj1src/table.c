@@ -9,7 +9,6 @@ int lastIndex = 0; /* End of the string table, empty */
 extern int yyleng;
 extern int yylval;
 
-
 void prt_hash_tbl()
 {
    int i;
@@ -81,12 +80,6 @@ int hashpjw( char *s, int l)      /* compute hash value for string in yytext
    return h%TBL_LEN;
 }
 
-int strl(char * text) {
-   int i;
-   for(i = 0; text[i] != '\0'; ++i);
-   return i;
-}
-
 void string_table_insert(char * text, int slen) {
    // string table insert
    for(int i = 0; i < slen; i++) {
@@ -111,12 +104,14 @@ void hash_table_insert(char * text, int slen, int tokenid, int hashIndex) {
 
    // hash table insert
    hash_tbl[hashIndex] = current;
+   current = NULL;
 
 }
 
 void install_id(char* text, int tokenid) /* insert an id/string into hash table , set yylval */
 {
-   int slen = strl(text);
+   int slen;
+   STRLEN(slen, text); //int slen = strl(text);
    int hashIndex = hashpjw(text, slen);
 
    if (hash_tbl[hashIndex] != NULL) {
@@ -128,6 +123,7 @@ void install_id(char* text, int tokenid) /* insert an id/string into hash table 
       if (temp->id == tokenid) {
          // id/string already exists, update yylval and return
          yylval = temp->index;
+         temp = NULL;
          return;
       }
 
@@ -138,6 +134,7 @@ void install_id(char* text, int tokenid) /* insert an id/string into hash table 
          if (temp->id == tokenid) {
             // id/string already exists, update yylval and return
             yylval = temp->index;
+            temp = NULL;
             return;
          }
 
@@ -149,6 +146,7 @@ void install_id(char* text, int tokenid) /* insert an id/string into hash table 
       hash_table_insert(text, slen, tokenid, hashIndex);
       hash_tbl[hashIndex]->next = temp;
       yylval = hash_tbl[hashIndex]->index;
+      temp = NULL;
       return;
 
    } else {
