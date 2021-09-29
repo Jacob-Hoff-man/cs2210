@@ -3,13 +3,14 @@
 #include "token.h"
 #include "table.h"
 
-extern int yycolumn, yylength, yyline, yylval;
+extern int yycolumn, yyline, yylval;
 
 // lex.l methods
 void tolowercase();
+void trimStringConstant();
+void filterEscapeSequences();
 void ReportError(char* msg);
 void match();
-int yywrap();
 int yylex();
 %}
 
@@ -73,6 +74,7 @@ errcomm1      \*\/
 {return}            {yycolumn += yyleng; tolowercase(); return(RETURNnum);}
 {void}              {yycolumn += yyleng; return(VOIDnum);}
 {identifier}        {yycolumn += yyleng;
+                     tolowercase();
                      install_id( yytext, IDnum);
                      return(IDnum);}
 {errid}             {ReportError("wrong identifier"); yycolumn += yyleng;}
@@ -96,6 +98,9 @@ errcomm1      \*\/
 "+"                 {yycolumn += yyleng; return(PLUSnum);}
 "}"                 {yycolumn += yyleng; return(RBRACEnum);}
 {strcnst}           {yycolumn += yyleng;
+                     tolowercase();
+                     trimStringConstant();
+                     filterEscapeSequences();
                      install_id( yytext, SCONSTnum);
                      return(SCONSTnum);}
 {errstr}            {ReportError("string doesn't end"); yyline++; yycolumn=0;}
@@ -107,13 +112,182 @@ errcomm1      \*\/
 
 void tolowercase()
 {
-  printf("tolowercase()");
 /* transform an identifier to lower case representation */
   int i;
   for( i=0; i<yyleng; i++ )
   {
      if ( 'A'<=yytext[i] && yytext[i]<='Z' )
         yytext[i] = yytext[i] - 'A' + 'a';
+  }
+}
+
+void trimStringConstant()
+{
+  char * new = malloc(yyleng - 2);
+  for(int i = 0; i < yyleng; i++) {
+    new[i] = yytext[i + 1];
+  }
+  yyleng = yyleng - 2;
+  new[yyleng] = STR_SPRTR;
+  yytext = new;
+}
+
+/* TODO1: define ASCII DEC spec char literals in a header, maybe add some more */
+/* TODO2: make macro for repeated sequence in each case */
+/* TODO3: make better code...
+I believe this is O(n^2), I am also quite certain it leaks memory real bad */
+void filterEscapeSequences() {
+  /* trying to find any escape sequences */
+  for(int i = 0; i < yyleng; i++) {
+    if(yytext[i] == '\\') {
+
+      char * new = malloc(yyleng - 1);
+
+      switch(yytext[i + 1]) {
+        case 'b': 
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)8; // backspace ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'e':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)27; // escape ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'n':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)10; // newline ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'r':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)13; // carriage return ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 't':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)9; // horizontal tab ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'v':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)11; // vertical tab ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case '\\':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)92; // backslash ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        default:  
+                  break;
+      }
+    }
   }
 }
 
@@ -127,10 +301,10 @@ void match()
 /* trying to find the ending of the comment, print error msg when necessary */
    char nextchar;
 
-   do{
+   do {
      nextchar = input();
      yycolumn++;
-     switch ( nextchar ){
+     switch (nextchar){
      case '*':  nextchar = input();
                 if ( nextchar == '/')
                 {
@@ -148,7 +322,4 @@ void match()
    } while(1);
 }
 
-int yywrap() {
-  return 1;
-}
          

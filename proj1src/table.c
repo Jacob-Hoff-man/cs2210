@@ -1,30 +1,14 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "token.h"
 #include "table.h"
 
-int      lastIndex = 0; /* End of the string table, empty */
+int lastIndex = 0; /* End of the string table, empty */
 
 extern int yyleng;
 extern int yylval;
 
-
-void init_hash_tbl()  /* Initialize hash table */
-{
-   int i;
-
-   for( i=0; i<TBL_LEN; i++ )
-   {
-     hash_tbl[i] = NULL;
-   }
-}
-
-void init_string_tbl()
-{
-   int i;
-   for ( i=0; i<STRTBL_LEN; i++ )
-      strg_tbl[i] = 0;
-}
 
 void prt_hash_tbl()
 {
@@ -58,6 +42,26 @@ void prt_string_tbl()
    printf("\n");
 }
 
+void init_hash_tbl()  /* Initialize hash table */
+{
+   int i;
+
+   for( i=0; i<TBL_LEN; i++ )
+   {
+     hash_tbl[i] = NULL;
+   }
+
+}
+
+void init_string_tbl()
+{
+   int i;
+   for ( i=0; i<STRTBL_LEN; i++ )
+      strg_tbl[i] = 0;
+
+}
+
+
 int hashpjw( char *s, int l)      /* compute hash value for string in yytext 
                                       taken from book Pg. 436 */
 {
@@ -84,7 +88,6 @@ int strl(char * text) {
 }
 
 void string_table_insert(char * text, int slen) {
-   printf("string table insert, string = %s", text);
    // string table insert
    for(int i = 0; i < slen; i++) {
       // insert characters into string table, range lastIndex..<lastIndex+strl-1
@@ -95,16 +98,16 @@ void string_table_insert(char * text, int slen) {
 }
 
 void hash_table_insert(char * text, int slen, int tokenid, int hashIndex) {
-   printf("hash table insert, tokenid = %d", tokenid);
-   hash_ele * current;
+   hash_ele * current = malloc(sizeof(hash_ele));
    current->id = tokenid;
    current->len = slen;
    current->index = lastIndex;
+   current->next = NULL;
 
    // string table insert
    string_table_insert(text, slen);
 
-   current->next = hash_tbl[hashIndex]; // current is now head node
+   // current->next = hash_tbl[hashIndex]; // current is now head node
 
    // hash table insert
    hash_tbl[hashIndex] = current;
@@ -141,8 +144,10 @@ void install_id(char* text, int tokenid) /* insert an id/string into hash table 
       }
 
       // no match in any hash_ele in hash_tbl[hashIndex]
-      // insert id/string, update yylval, and return
+      // insert hash/string (new head), update hash_tbl[hashIndex].next, update yylval, and return
+      // hash_ele * temp = hash_tbl[hashIndex];
       hash_table_insert(text, slen, tokenid, hashIndex);
+      hash_tbl[hashIndex]->next = temp;
       yylval = hash_tbl[hashIndex]->index;
       return;
 

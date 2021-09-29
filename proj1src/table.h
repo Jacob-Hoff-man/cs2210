@@ -13,7 +13,9 @@ hash_ele * hash_tbl[TBL_LEN];      /* Hash table of length TBL_LEN */
 char     strg_tbl[STRTBL_LEN];   /* String table of length STRTBL_LEN */
 
 // table.c methods
-extern int strl(char * text); /* install_id() helper */
-extern void string_table_insert(char * text, int slen); /* install_id() helper */
-extern void hash_table_insert(char * text, int slen, int tokenid, int hashIndex); /* install_id() helper */
-extern void install_id(); /* install string constants & identifiers into string tbl */
+ int strl(char * text); /* install_id() helper */
+ void string_table_insert(char * text, int slen); /* install_id() helper */
+ void hash_table_insert(char * text, int slen, int tokenid, int hashIndex); /* install_id() helper */
+ void install_id(); /* install string constants & identifiers into string tbl */ 
+
+ 

@@ -523,17 +523,18 @@ char *yytext;
 #include "token.h"
 #include "table.h"
 
-extern int yycolumn, yylength, yyline, yylval;
+extern int yycolumn, yyline, yylval;
 
 // lex.l methods
 void tolowercase();
+void trimStringConstant();
+void filterEscapeSequences();
 void ReportError(char* msg);
 void match();
-int yywrap();
 int yylex();
-#line 534 "lex.yy.c"
+#line 535 "lex.yy.c"
 /* regular definitions */
-#line 536 "lex.yy.c"
+#line 537 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -750,9 +751,9 @@ YY_DECL
 		}
 
 	{
-#line 40 "lex.l"
+#line 41 "lex.l"
 
-#line 755 "lex.yy.c"
+#line 756 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -811,7 +812,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 41 "lex.l"
+#line 42 "lex.l"
 {
                       int i;
                       for ( i=0; i<yyleng; i++ )
@@ -826,22 +827,22 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 51 "lex.l"
+#line 52 "lex.l"
 {yyline++; yycolumn=0;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 52 "lex.l"
+#line 53 "lex.l"
 {yycolumn += yyleng; return(ANDnum);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 53 "lex.l"
+#line 54 "lex.l"
 {yycolumn += yyleng; return(ASSGNnum);}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 54 "lex.l"
+#line 55 "lex.l"
 {
                      yycolumn += yyleng; 
                      return(DECLARATIONSnum);
@@ -849,12 +850,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 58 "lex.l"
+#line 59 "lex.l"
 {yycolumn += yyleng; return(DOTnum);}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 59 "lex.l"
+#line 60 "lex.l"
 {
                      yycolumn+= yyleng;
                      return(ENDDECLARATIONSnum);
@@ -862,210 +863,214 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 63 "lex.l"
+#line 64 "lex.l"
 {yycolumn += yyleng; return(EQUALnum);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 64 "lex.l"
+#line 65 "lex.l"
 {yycolumn += yyleng; return(GTnum);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 65 "lex.l"
+#line 66 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(METHODnum);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 66 "lex.l"
+#line 67 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(PROGRAMnum);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 67 "lex.l"
+#line 68 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(VALnum);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 68 "lex.l"
+#line 69 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(WHILEnum);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 69 "lex.l"
+#line 70 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(CLASSnum);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 70 "lex.l"
+#line 71 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(ELSEnum);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 71 "lex.l"
+#line 72 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(IFnum);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 72 "lex.l"
+#line 73 "lex.l"
 {yycolumn += yyleng; printf("iint"); tolowercase(); return(INTnum);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 73 "lex.l"
+#line 74 "lex.l"
 {yycolumn += yyleng; tolowercase(); return(RETURNnum);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 74 "lex.l"
+#line 75 "lex.l"
 {yycolumn += yyleng; return(VOIDnum);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 75 "lex.l"
+#line 76 "lex.l"
 {yycolumn += yyleng;
+                     tolowercase();
                      install_id( yytext, IDnum);
                      return(IDnum);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 78 "lex.l"
+#line 80 "lex.l"
 {ReportError("wrong identifier"); yycolumn += yyleng;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 79 "lex.l"
+#line 81 "lex.l"
 {yycolumn += yyleng; return(LBRACnum);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 80 "lex.l"
+#line 82 "lex.l"
 {yycolumn += yyleng; return(LPARENnum);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 81 "lex.l"
+#line 83 "lex.l"
 {yycolumn += yyleng; return(NEnum);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 82 "lex.l"
+#line 84 "lex.l"
 {yycolumn += yyleng; return(ORnum);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 83 "lex.l"
+#line 85 "lex.l"
 {yycolumn += yyleng; return(RBRACnum);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 84 "lex.l"
+#line 86 "lex.l"
 {yycolumn += yyleng; return(RPARENnum);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 85 "lex.l"
+#line 87 "lex.l"
 {yycolumn += yyleng; return(SEMInum);}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 86 "lex.l"
+#line 88 "lex.l"
 {yycolumn += yyleng; return(COMMAnum);}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 87 "lex.l"
+#line 89 "lex.l"
 {yycolumn += yyleng; return(DIVIDEnum);}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 88 "lex.l"
+#line 90 "lex.l"
 {yycolumn += yyleng; return(EQnum);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 89 "lex.l"
+#line 91 "lex.l"
 {yycolumn += yyleng; return(GEnum);}  
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 90 "lex.l"
+#line 92 "lex.l"
 {yycolumn += yyleng; yylval = atoi(yytext); return(ICONSTnum);}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 91 "lex.l"
+#line 93 "lex.l"
 {yycolumn += yyleng; return(LBRACEnum);}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 92 "lex.l"
+#line 94 "lex.l"
 {yycolumn += yyleng; return(LEnum);}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 93 "lex.l"
+#line 95 "lex.l"
 {yycolumn += yyleng; return(LTnum);}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 94 "lex.l"
+#line 96 "lex.l"
 {yycolumn += yyleng; return(MINUSnum);}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 95 "lex.l"
+#line 97 "lex.l"
 {yycolumn += yyleng; return(NOTnum);}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 96 "lex.l"
+#line 98 "lex.l"
 {yycolumn += yyleng; return(PLUSnum);}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 97 "lex.l"
+#line 99 "lex.l"
 {yycolumn += yyleng; return(RBRACEnum);}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 98 "lex.l"
+#line 100 "lex.l"
 {yycolumn += yyleng;
+                     tolowercase();
+                     trimStringConstant();
+                     filterEscapeSequences();
                      install_id( yytext, SCONSTnum);
                      return(SCONSTnum);}
 	YY_BREAK
 case 42:
 /* rule 42 can match eol */
 YY_RULE_SETUP
-#line 101 "lex.l"
+#line 106 "lex.l"
 {ReportError("string doesn't end"); yyline++; yycolumn=0;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 102 "lex.l"
+#line 107 "lex.l"
 {yycolumn += yyleng; return(TIMESnum);}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 103 "lex.l"
+#line 108 "lex.l"
 { yycolumn += yyleng; match(); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 104 "lex.l"
+#line 109 "lex.l"
 {yycolumn++; ReportError("comment without beginning");}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 105 "lex.l"
+#line 110 "lex.l"
 {ReportError("unknown string"); while (input() != '\n'); yyline++; yycolumn=0; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 106 "lex.l"
+#line 111 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1068 "lex.yy.c"
+#line 1073 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2070,18 +2075,187 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 106 "lex.l"
+#line 111 "lex.l"
 
 
 void tolowercase()
 {
-  printf("tolowercase()");
 /* transform an identifier to lower case representation */
   int i;
   for( i=0; i<yyleng; i++ )
   {
      if ( 'A'<=yytext[i] && yytext[i]<='Z' )
         yytext[i] = yytext[i] - 'A' + 'a';
+  }
+}
+
+void trimStringConstant()
+{
+  char * new = malloc(yyleng - 2);
+  for(int i = 0; i < yyleng; i++) {
+    new[i] = yytext[i + 1];
+  }
+  yyleng = yyleng - 2;
+  new[yyleng] = STR_SPRTR;
+  yytext = new;
+}
+
+/* TODO1: define ASCII DEC literals in a header, maybe add some more */
+/* TODO2: make macro for repeated sequence in each case */
+/* TODO3: make better code */
+/* I believe this is O(n^2), I am also quite certain it leaks memory real bad */
+void filterEscapeSequences() {
+  /* trying to find any escape sequences */
+  for(int i = 0; i < yyleng; i++) {
+    if(yytext[i] == '\\') {
+
+      char * new = malloc(yyleng - 1);
+
+      switch(yytext[i + 1]) {
+        case 'b': 
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)8; // backspace ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'e':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)27; // escape ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'n':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)10; // newline ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'r':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)13; // carriage return ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 't':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)9; // horizontal tab ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case 'v':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)11; // vertical tab ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case '\\':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)92; // backslash ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        default:  
+                  break;
+      }
+    }
   }
 }
 
@@ -2095,10 +2269,10 @@ void match()
 /* trying to find the ending of the comment, print error msg when necessary */
    char nextchar;
 
-   do{
+   do {
      nextchar = input();
      yycolumn++;
-     switch ( nextchar ){
+     switch (nextchar){
      case '*':  nextchar = input();
                 if ( nextchar == '/')
                 {
@@ -2116,8 +2290,5 @@ void match()
    } while(1);
 }
 
-int yywrap() {
-  return 1;
-}
          
 
