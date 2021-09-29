@@ -284,6 +284,26 @@ void filterEscapeSequences() {
                   new = NULL;
 
                   break;
+        case '\'':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)39; // single-quote ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
         default:  
                   break;
       }

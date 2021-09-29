@@ -2100,10 +2100,10 @@ void trimStringConstant()
   yytext = new;
 }
 
-/* TODO1: define ASCII DEC literals in a header, maybe add some more */
+/* TODO1: define ASCII DEC spec char literals in a header, maybe add some more */
 /* TODO2: make macro for repeated sequence in each case */
-/* TODO3: make better code */
-/* I believe this is O(n^2), I am also quite certain it leaks memory real bad */
+/* TODO3: make better code...
+I believe this is O(n^2), I am also quite certain it leaks memory real bad */
 void filterEscapeSequences() {
   /* trying to find any escape sequences */
   for(int i = 0; i < yyleng; i++) {
@@ -2237,6 +2237,26 @@ void filterEscapeSequences() {
                     if(i == j) {
                       // backslash at yytext[i]
                       new[j] = (char)92; // backslash ASCII DEC
+
+                    } else if(i < j) {
+                      // after the backslash
+                      new[j] = yytext[j + 1];
+                    
+                    } else {
+                      // before the backslash
+                      new[j] = yytext[j];
+                    }
+                  }
+                  yyleng = yyleng - 1;
+                  yytext = new;
+                  new = NULL;
+
+                  break;
+        case '\'':
+                  for(int j = 0; j < yyleng - 1; j++) {
+                    if(i == j) {
+                      // backslash at yytext[i]
+                      new[j] = (char)39; // single-quote ASCII DEC
 
                     } else if(i < j) {
                       // after the backslash
