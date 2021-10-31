@@ -1,0 +1,11 @@
+/* EXAMPLE NEW: Program with if-else statement */
+
+program xyz;
+class Test {
+  method int main () {
+    if (x > 1) { x:= 20; }
+    else if(x < 2) { x:=30; }
+    else { x:= 40; };
+  }
+}
+

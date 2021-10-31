@@ -55,9 +55,8 @@ class arrayOperations
 	else
 	  {
 	  x:= 3;
-	  }
-    ;
-      } ;
+	  };
+      };
 
   }
 }

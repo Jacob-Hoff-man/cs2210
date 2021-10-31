@@ -16,7 +16,7 @@ int main(int argc, char * argv[]) {
       if (!yyin) {
         printf("invalid command-line input for parserdrv.c main function.\n");
         printf("[filename: %s] could not be opened.\n", argv[1]);
-        printf("usage: \n\t./proj2src/go\n\t./pro21src/go input.txt\n");
+        printf("usage: \n\t./proj2src/parser\n\t./pro21src/parser input.txt\n");
         return(1);
       }
     } else if (argc == 1) {
@@ -24,13 +24,13 @@ int main(int argc, char * argv[]) {
       /* yyin = NULL, yylex() implicitly sets stdin as input */
         printf("invalid command-line input for parserdrv.c main function.\n");
         printf("parserdrv.c main function does not currently support stdin as input.\n");
-        printf("usage: \n\t./proj2src/go\n\t./pro21src/go input.txt\n");
+        printf("usage: \n\t./proj2src/parser\n\t./pro21src/parser input.txt\n");
         return(1);
 
     } else {
         /* invalid file input */
         printf("invalid command-line input for parserdrv.c main function.\n");
-        printf("usage: \n\t./proj2src/go\n\t./pro21src/go input.txt\n");
+        printf("usage: \n\t./proj2src/parser\n\t./pro21src/parser input.txt\n");
         return(1);
     }
 

@@ -25,6 +25,8 @@ void yyerror(char * str);
 %type  <tptr>  Expression Comp_op SimpleExpression Term Factor Expression_rec2
 %type  <tptr>  UnsignedConstant Variable Variable_tail Variable_rec Variable_1 
 
+%nonassoc IFX
+%nonassoc ELSE
 
 %%/* yacc specification*/
 Program          :      PROGRAMnum IDnum SEMInum ClassDecl_rec
@@ -287,7 +289,7 @@ ReturnStatement     :   RETURNnum
 /*=============== Begin of Missing code =======================*/
 /*=============================================================*/
 /*=============================================================*/
-IfStatement         :   IFnum Expression StatementList
+IfStatement         :   IFnum Expression StatementList %prec IFX
 /* root is IfElseOp */    { 
                               tree commat = MakeTree(CommaOp, $2, $3);
                               $$ = MakeTree(IfElseOp, NullExp(), commat); 

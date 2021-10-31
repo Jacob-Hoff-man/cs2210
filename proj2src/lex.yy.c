@@ -523,7 +523,7 @@ char *yytext;
 #include "table.c"
 
 extern int yycolumn, yyline;
-extern YYSTYPE yylval;
+//extern YYSTYPE yylval;
 
 /* lex.l methods */
 void tolowercase();
